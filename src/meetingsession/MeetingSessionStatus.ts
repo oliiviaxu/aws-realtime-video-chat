@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SdkSignalFrame } from '../signalingprotocol/SignalingProtocol.js';
-import MeetingSessionStatusCode from './MeetingSessionStatusCode';
+import MeetingSessionStatusCode from './MeetingSessionStatusCode.js';
 
 /**
  * [[MeetingSessionStatus]] indicates a status received regarding the session.

@@ -3,7 +3,7 @@
 
 import AudioMixController from '../audiomixcontroller/AudioMixController';
 import AudioProfile from '../audioprofile/AudioProfile';
-import AudioVideoController from '../audiovideocontroller/AudioVideoController';
+import AudioVideoController from './AudioVideoController';
 import ExtendedBrowserBehavior from '../browserbehavior/ExtendedBrowserBehavior';
 import ConnectionMonitor from '../connectionmonitor/ConnectionMonitor';
 import EventController from '../eventcontroller/EventController';

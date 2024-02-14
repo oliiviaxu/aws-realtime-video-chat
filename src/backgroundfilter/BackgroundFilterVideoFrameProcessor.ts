@@ -5,7 +5,7 @@ import { loadWorker } from '../../libs/voicefocus/loader';
 import { supportsWASM, supportsWorker } from '../../libs/voicefocus/support';
 import { AssetSpec } from '../../libs/voicefocus/voicefocus';
 import ModelSpecBuilder from '../backgroundblurprocessor/ModelSpecBuilder';
-import BackgroundFilterPaths from '../backgroundfilter/BackgroundFilterPaths';
+import BackgroundFilterPaths from './BackgroundFilterPaths';
 import DefaultBrowserBehavior from '../browserbehavior/DefaultBrowserBehavior';
 import Logger from '../logger/Logger';
 import ModelSpec from '../modelspec/ModelSpec';

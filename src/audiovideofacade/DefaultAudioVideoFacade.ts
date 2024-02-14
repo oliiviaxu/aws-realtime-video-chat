@@ -7,7 +7,7 @@ import AudioMixController from '../audiomixcontroller/AudioMixController';
 import AudioMixObserver from '../audiomixobserver/AudioMixObserver';
 import AudioProfile from '../audioprofile/AudioProfile';
 import AudioVideoController from '../audiovideocontroller/AudioVideoController';
-import AudioVideoFacade from '../audiovideofacade/AudioVideoFacade';
+import AudioVideoFacade from './AudioVideoFacade';
 import AudioVideoObserver from '../audiovideoobserver/AudioVideoObserver';
 import ContentShareController from '../contentsharecontroller/ContentShareController';
 import ContentShareObserver from '../contentshareobserver/ContentShareObserver';

@@ -3,7 +3,7 @@
 
 import BackgroundFilterSpec from '../backgroundfilter/BackgroundFilterSpec';
 import BackgroundFilterVideoFrameProcessor from '../backgroundfilter/BackgroundFilterVideoFrameProcessor';
-import BackgroundReplacementProcessor from '../backgroundreplacementprocessor/BackgroundReplacementProcessor';
+import BackgroundReplacementProcessor from './BackgroundReplacementProcessor';
 import ConsoleLogger from '../logger/ConsoleLogger';
 import LogLevel from '../logger/LogLevel';
 import NoOpVideoFrameProcessor from '../videoframeprocessor/NoOpVideoFrameProcessor';

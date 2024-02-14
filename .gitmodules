@@ -1,0 +1,3 @@
+[submodule "amazon-chime-sdk-js"]
+	path = amazon-chime-sdk-js
+	url = https://github.com/aws/amazon-chime-sdk-js.git

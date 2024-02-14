@@ -11,7 +11,7 @@ import {
 } from '../signalingprotocol/SignalingProtocol.js';
 import VideoSource from '../videosource/VideoSource';
 import DefaultVideoStreamIdSet from '../videostreamidset/DefaultVideoStreamIdSet';
-import VideoStreamIndex from '../videostreamindex/VideoStreamIndex';
+import VideoStreamIndex from './VideoStreamIndex';
 import VideoStreamDescription from './VideoStreamDescription';
 
 /**

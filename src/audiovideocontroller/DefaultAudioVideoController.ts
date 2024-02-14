@@ -7,7 +7,7 @@ import DefaultActiveSpeakerDetector from '../activespeakerdetector/DefaultActive
 import AudioMixController from '../audiomixcontroller/AudioMixController';
 import DefaultAudioMixController from '../audiomixcontroller/DefaultAudioMixController';
 import AudioProfile from '../audioprofile/AudioProfile';
-import AudioVideoController from '../audiovideocontroller/AudioVideoController';
+import AudioVideoController from './AudioVideoController';
 import AudioVideoObserver from '../audiovideoobserver/AudioVideoObserver';
 import DefaultBrowserBehavior from '../browserbehavior/DefaultBrowserBehavior';
 import ConnectionHealthData from '../connectionhealthpolicy/ConnectionHealthData';

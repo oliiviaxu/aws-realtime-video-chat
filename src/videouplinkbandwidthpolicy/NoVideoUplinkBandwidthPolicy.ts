@@ -4,7 +4,7 @@
 import DefaultVideoCaptureAndEncodeParameter from '../videocaptureandencodeparameter/DefaultVideoCaptureAndEncodeParameter';
 import VideoCaptureAndEncodeParameter from '../videocaptureandencodeparameter/VideoCaptureAndEncodeParameter';
 import VideoStreamIndex from '../videostreamindex/VideoStreamIndex';
-import VideoUplinkBandwidthPolicy from '../videouplinkbandwidthpolicy/VideoUplinkBandwidthPolicy';
+import VideoUplinkBandwidthPolicy from './VideoUplinkBandwidthPolicy';
 import ConnectionMetrics from './ConnectionMetrics';
 
 export default class NoVideoUplinkBandwidthPolicy implements VideoUplinkBandwidthPolicy {

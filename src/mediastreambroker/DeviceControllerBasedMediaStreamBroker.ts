@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import DeviceController from '../devicecontroller/DeviceController';
-import MediaStreamBroker from '../mediastreambroker/MediaStreamBroker';
+import MediaStreamBroker from './MediaStreamBroker';
 
 export default interface DeviceControllerBasedMediaStreamBroker
   extends DeviceController,

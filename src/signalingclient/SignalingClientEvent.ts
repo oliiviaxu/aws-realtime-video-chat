@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SdkSignalFrame } from '../signalingprotocol/SignalingProtocol.js';
-import SignalingClient from './SignalingClient';
-import SignalingClientEventType from './SignalingClientEventType';
+import SignalingClient from './SignalingClient.js';
+import SignalingClientEventType from './SignalingClientEventType.js';
 
 /*
  * [[SignalingClientEvent]] stores an event that can be sent to observers of the SignalingClient.

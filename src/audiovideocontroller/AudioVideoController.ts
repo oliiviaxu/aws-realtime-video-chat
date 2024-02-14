@@ -3,7 +3,7 @@
 
 import ActiveSpeakerDetector from '../activespeakerdetector/ActiveSpeakerDetector';
 import AudioMixController from '../audiomixcontroller/AudioMixController';
-import AudioVideoControllerFacade from '../audiovideocontroller/AudioVideoControllerFacade';
+import AudioVideoControllerFacade from './AudioVideoControllerFacade';
 import AudioVideoObserver from '../audiovideoobserver/AudioVideoObserver';
 import EventController from '../eventcontroller/EventController';
 import Logger from '../logger/Logger';

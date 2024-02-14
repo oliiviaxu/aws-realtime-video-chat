@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import DeviceChangeObserver from '../devicechangeobserver/DeviceChangeObserver';
-import RemovableAnalyserNode from '../devicecontroller/RemovableAnalyserNode';
+import RemovableAnalyserNode from './RemovableAnalyserNode';
 import AudioInputDevice from './AudioInputDevice';
 import VideoInputDevice from './VideoInputDevice';
 import VideoQualitySettings from './VideoQualitySettings';

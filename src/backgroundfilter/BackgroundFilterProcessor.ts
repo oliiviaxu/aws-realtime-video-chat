@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { loadWorker } from '../../libs/voicefocus/loader';
-import BackgroundFilterOptions from '../backgroundfilter/BackgroundFilterOptions';
-import BackgroundFilterVideoFrameProcessorObserver from '../backgroundfilter/BackgroundFilterVideoFrameProcessorObserver';
+import BackgroundFilterOptions from './BackgroundFilterOptions';
+import BackgroundFilterVideoFrameProcessorObserver from './BackgroundFilterVideoFrameProcessorObserver';
 import EventController from '../eventcontroller/EventController';
 import Logger from '../logger/Logger';
 import CanvasVideoFrameBuffer from '../videoframeprocessor/CanvasVideoFrameBuffer';

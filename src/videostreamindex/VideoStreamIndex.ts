@@ -6,9 +6,9 @@ import {
   SdkIndexFrame,
   SdkSubscribeAckFrame,
 } from '../signalingprotocol/SignalingProtocol.js';
-import VideoSource from '../videosource/VideoSource';
-import VideoStreamIdSet from '../videostreamidset/VideoStreamIdSet';
-import VideoStreamDescription from './VideoStreamDescription';
+import VideoSource from '../videosource/VideoSource.js';
+import VideoStreamIdSet from '../videostreamidset/VideoStreamIdSet.js';
+import VideoStreamDescription from './VideoStreamDescription.js';
 
 /**
  * [[VideoStreamIndex]] holds the set of video streams available on the server for subscription
