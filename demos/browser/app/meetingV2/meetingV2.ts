@@ -22,7 +22,7 @@ import {
   ConsoleLogger,
   ContentShareObserver,
   DataMessage,
-  DefaultActiveSpeakerPolicy,
+  // DefaultActiveSpeakerPolicy,
   DefaultAudioVideoController,
   DefaultBrowserBehavior,
   DefaultDeviceController,
@@ -2108,14 +2108,14 @@ export class DemoMeetingApp
       }
     };
 
-    const scoreHandler = (scores: { [attendeeId: string]: number }) => {};
+    // const scoreHandler = (scores: { [attendeeId: string]: number }) => {};
 
-    this.audioVideo.subscribeToActiveSpeakerDetector(
-        new DefaultActiveSpeakerPolicy(),
-        this.activeSpeakerHandler,
-        scoreHandler,
-        this.showActiveSpeakerScores ? 100 : 0
-    );
+    // this.audioVideo.subscribeToActiveSpeakerDetector(
+    //     new DefaultActiveSpeakerPolicy(),
+    //     this.activeSpeakerHandler,
+    //     scoreHandler,
+    //     this.showActiveSpeakerScores ? 100 : 0
+    // );
   }
 
   dataMessageHandler(dataMessage: DataMessage): void {

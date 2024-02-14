@@ -60,7 +60,6 @@ Globals:
         CAPTURE_S3_DESTINATION_PREFIX: !Ref ChimeMediaCaptureS3BucketPrefix
         AWS_ACCOUNT_ID: !Sub "${AWS::AccountId}"
 Resources:
-
   ChimeMeetingsAccessPolicy:
     Type: AWS::IAM::Policy
     Properties:

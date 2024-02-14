@@ -405,13 +405,13 @@ export default class VideoTileCollection implements AudioVideoObserver {
   private updateLayout(): void {
     this.tileArea.className = `v-grid size-${this.videoTileCount()}`;
 
-    const localTileId = this.localTileId();
-    const activeTile = this.activeTileId();
-    if (activeTile && activeTile !== localTileId) {
-      this.tileArea.classList.add('featured');
-    } else {
-      this.tileArea.classList.remove('featured');
-    }
+    // const localTileId = this.localTileId();
+    // const activeTile = this.activeTileId();
+    // if (activeTile && activeTile !== localTileId) {
+    //   this.tileArea.classList.add('featured');
+    // } else {
+    //   this.tileArea.classList.remove('featured');
+    // }
   }
 
   private videoTileCount(): number {
