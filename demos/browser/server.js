@@ -34,7 +34,7 @@ const chimeSDKMeetings = new ChimeSDKMeetings({
 
 const sts = new STS({ region: 'us-east-1' });
 
-const captureS3Destination = process.env.CAPTURE_S3_DESTINATION;
+const captureS3Destination = `arn:aws:s3:::otest02`;
 if (captureS3Destination) {
   console.info(`S3 destination for capture is ${captureS3Destination}`)
 } else {
@@ -46,6 +46,57 @@ if (ivsEndpoint) {
   console.info(`IVS destination for live connector is ${ivsEndpoint}`)
 } else {
   console.info(`IVS destination for live connector not set. Live Connector will not be available.`)
+}
+
+// // Function to start recording if not already started
+// async function startRecordingIfConditionMet(meetingTitle) {
+//   const meeting = meetingTable[meetingTitle];
+//   if (!meeting || !meeting.Meeting.MeetingId || meeting.Capture) {
+//       console.log('Meeting not found or recording already started.');
+//       return;
+//   }
+
+//   const { Attendees } = await chimeSDKMeetings.listAttendees({ MeetingId: meeting.Meeting.MeetingId });
+
+//   // Check if the meeting has exactly 2 attendees
+//   if (Attendees.length === 2) {
+//       console.log('Starting recording for meeting:', meetingTitle);
+//       const callerInfo = await sts.getCallerIdentity();
+//       const pipelineInfo = await chimeSDKMediaPipelines.createMediaCapturePipeline({
+//           SourceType: "ChimeSdkMeeting",
+//           SourceArn: `arn:aws:chime::${callerInfo.Account}:meeting:${meeting.Meeting.MeetingId}`,
+//           SinkType: "S3Bucket",
+//           SinkArn: captureS3Destination,
+//       });
+//       meeting.Capture = pipelineInfo.MediaCapturePipeline;
+//       console.log('Recording started:', pipelineInfo.MediaCapturePipeline.MediaPipelineId);
+//   }
+// }
+
+const { ChimeSDKMediaPipelinesClient, CreateMediaCapturePipelineCommand } = require("@aws-sdk/client-chime-sdk-media-pipelines");
+
+// Initialize the Chime SDK Media Pipelines client
+const chimeSDKMediaPipelinesClient = new ChimeSDKMediaPipelinesClient({ region: "us-east-1" });
+
+async function createMediaCapturePipeline(meetingArn) {
+    const sourceArn = meetingArn;
+    const sinkArn = "arn:aws:s3:::otest01-ap-northeast-1";
+
+    const command = new CreateMediaCapturePipelineCommand({
+        SourceType: "ChimeSdkMeeting",
+        SourceArn: sourceArn,
+        SinkType: "S3Bucket",
+        SinkArn: sinkArn,
+    });
+
+    try {
+        const response = await chimeSDKMediaPipelinesClient.send(command);
+        console.log("Media Capture Pipeline created successfully:", response);
+        return response; // Contains the MediaCapturePipeline object
+    } catch (error) {
+        console.error("Error creating media capture pipeline:", error);
+        throw error; // Rethrow or handle error appropriately
+    }
 }
 
 function serve(host = '127.0.0.1:8080') {
@@ -126,9 +177,9 @@ function serve(host = '127.0.0.1:8080') {
             if (primaryMeeting !== undefined) {
               request.PrimaryMeetingId = primaryMeeting.Meeting.MeetingId;
             }
-            if (requestUrl.query.ns_es === 'true' || 
-                  requestUrl.query.v_rs === 'FHD' || 
-                  requestUrl.query.v_rs === 'None' || 
+            if (requestUrl.query.ns_es === 'true' ||
+                  requestUrl.query.v_rs === 'FHD' ||
+                  requestUrl.query.v_rs === 'None' ||
                   requestUrl.query.c_rs === 'UHD' ||
                   requestUrl.query.c_rs === 'None' ||
                   requestUrl.query.a_cnt > 1 && requestUrl.query.a_cnt <= 250) {
@@ -201,6 +252,35 @@ function serve(host = '127.0.0.1:8080') {
             Attendee: attendee,
           },
         }
+        const meetingId = meeting.Meeting.MeetingId;
+
+        // Fetch the current list of attendees to check the count
+        const attendeesResponse = await chimeSDKMeetings.listAttendees({
+          MeetingId: meetingId,
+        });
+
+        const attendees = attendeesResponse.Attendees;
+
+        // Check if there are exactly 2 attendees now
+        if (attendees.length === 2) {
+          // Define the ARN for the meeting source and the S3 bucket destination
+          const meetingArn = `arn:aws:chime::302840009536:meeting:${meetingId}`;
+          if (captureS3Destination) {
+            const s3BucketArn = captureS3Destination;
+            try {
+              const recordingResponse = await createMediaCapturePipeline(meetingArn, s3BucketArn);
+              console.log("Recording started successfully", recordingResponse);
+              // Optionally, store recording info in your meetingTable for reference
+              // meetingTable[requestUrl.query.title].recordingInfo = recordingResponse;
+            } catch (error) {
+              console.error("Failed to start recording:", error);
+              // Handle the failure as needed
+            }
+          } else {
+            console.warn("Cloud media capture not available")
+            respond(response, 500, 'application/json', JSON.stringify({}))
+          }
+        }
         if (meeting.Meeting.PrimaryExternalMeetingId !== undefined) {
           // Put this where it expects it, since it is not technically part of create meeting response
           joinResponse.JoinInfo.PrimaryExternalMeetingId = meeting.Meeting.PrimaryExternalMeetingId;
@@ -212,21 +292,21 @@ function serve(host = '127.0.0.1:8080') {
           MeetingId: meetingTable[requestUrl.query.title].Meeting.MeetingId,
         });
         respond(response, 200, 'application/json', JSON.stringify({}));
-      } else if (request.method === 'POST' && requestUrl.pathname === '/startCapture') {
-        if (captureS3Destination) {
-          const callerInfo = await sts.getCallerIdentity();
-          pipelineInfo = await chimeSDKMediaPipelines.createMediaCapturePipeline({
-            SourceType: "ChimeSdkMeeting",
-            SourceArn: `arn:aws:chime::${callerInfo.Account}:meeting:${meetingTable[requestUrl.query.title].Meeting.MeetingId}`,
-            SinkType: "S3Bucket",
-            SinkArn: captureS3Destination,
-          });
-          meetingTable[requestUrl.query.title].Capture = pipelineInfo.MediaCapturePipeline;
-          respond(response, 201, 'application/json', JSON.stringify(pipelineInfo));
-        } else {
-          console.warn("Cloud media capture not available")
-          respond(response, 500, 'application/json', JSON.stringify({}))
-        }
+      // } else if (request.method === 'POST' && requestUrl.pathname === '/startCapture') {
+      //   if (captureS3Destination) {
+      //     const callerInfo = await sts.getCallerIdentity();
+      //     pipelineInfo = await chimeSDKMediaPipelines.createMediaCapturePipeline({
+      //       SourceType: "ChimeSdkMeeting",
+      //       SourceArn: `arn:aws:chime::${callerInfo.Account}:meeting:${meetingTable[requestUrl.query.title].Meeting.MeetingId}`,
+      //       SinkType: "S3Bucket",
+      //       SinkArn: captureS3Destination,
+      //     });
+      //     meetingTable[requestUrl.query.title].Capture = pipelineInfo.MediaCapturePipeline;
+      //     respond(response, 201, 'application/json', JSON.stringify(pipelineInfo));
+      //   } else {
+      //     console.warn("Cloud media capture not available")
+      //     respond(response, 500, 'application/json', JSON.stringify({}))
+      //   }
       } else if (request.method === 'POST' && requestUrl.pathname === '/startLiveConnector') {
         if (ivsEndpoint) {
           try {
@@ -441,7 +521,7 @@ function serve(host = '127.0.0.1:8080') {
             MeetingId: meetingTable[requestUrl.query.title].Meeting.MeetingId,
             AttendeeId: requestUrl.query.id,
           });
-        respond(response, 200, 'application/json', JSON.stringify(getAttendeeResponse));      
+        respond(response, 200, 'application/json', JSON.stringify(getAttendeeResponse));
       } else {
         respond(response, 404, 'text/html', '404 Not Found');
       }
@@ -471,6 +551,5 @@ function respond(response, statusCode, contentType, body, skipLogging = false) {
     log(body);
   }
 }
-
 
 module.exports = { serve };

@@ -25,7 +25,6 @@ const ivs = new Ivs({
   apiVersion: '2020-07-14',
 });
 
-
 const chimeSDKMeetings = new ChimeSDKMeetings({ region: currentRegion, endpoint: chimeSDKMeetingsEndpoint });
 
 // Create an AWS SDK Media Pipelines object.
@@ -33,6 +32,11 @@ const chimeSdkMediaPipelines = new ChimeSDKMediaPipelines({
   region: mediaPipelinesControlRegion,
   endpoint: chimeSDKMediaPipelinesEndpoint
 });
+
+const { ChimeSDKMediaPipelinesClient, CreateMediaCapturePipelineCommand } = require("@aws-sdk/client-chime-sdk-media-pipelines");
+
+// Initialize the Chime SDK Media Pipelines client
+const chimeSDKMediaPipelinesClient = new ChimeSDKMediaPipelinesClient({ region: "us-east-1" });
 
 // Read resource names from the environment
 const {
@@ -123,9 +127,9 @@ exports.join = async (event, context) => {
       if (primaryMeeting !== undefined) {
         request.PrimaryMeetingId = primaryMeeting.Meeting.MeetingId;
       }
-      if (query.ns_es === 'true' || 
-            query.v_rs === 'FHD' || 
-            query.v_rs === 'None' || 
+      if (query.ns_es === 'true' ||
+            query.v_rs === 'FHD' ||
+            query.v_rs === 'None' ||
             query.c_rs === 'UHD' ||
             query.c_rs === 'None' ||
             query.a_cnt > 1 && query.a_cnt <= 250) {
@@ -154,6 +158,7 @@ exports.join = async (event, context) => {
       try {
         console.info('Creating new meeting: ' + JSON.stringify(request));
         meeting = await chimeSDKMeetings.createMeeting(request);
+
       } catch (error) {
         console.error('Failed to create new meeting: ' + JSON.stringify(error));
         let statusCode = 400;
@@ -218,7 +223,6 @@ exports.join = async (event, context) => {
     }
     return response(statusCode, 'application/json', JSON.stringify({ error: error.message }));
   }
-  
 };
 
 exports.end = async (event, context) => {
@@ -422,18 +426,45 @@ exports.start_capture = async (event, context) => {
   const meeting = await getMeeting(event.queryStringParameters.title);
   meetingRegion = meeting.Meeting.MediaRegion;
 
-  let captureS3Destination = `arn:aws:s3:::${CAPTURE_S3_DESTINATION_PREFIX}-${meetingRegion}/${meeting.Meeting.MeetingId}/`
-  const request = {
-    SourceType: "ChimeSdkMeeting",
-    SourceArn: `arn:aws:chime::${AWS_ACCOUNT_ID}:meeting:${meeting.Meeting.MeetingId}`,
-    SinkType: "S3Bucket",
-    SinkArn: captureS3Destination,
-  };
-  console.log("Creating new media capture pipeline: ", request)
-  pipelineInfo = await chimeSdkMediaPipelines.createMediaCapturePipeline(request);
+  const attendeesResponse = await chimeSDKMeetings.listAttendees({
+    MeetingId: meeting.Meeting.MeetingId
+  });
 
-  await putCapturePipeline(event.queryStringParameters.title, pipelineInfo)
-  console.log("Successfully created media capture pipeline: ", pipelineInfo);
+  const attendees = attendeesResponse.Attendees;
+
+  // Check if there are exactly 2 attendees now
+  if (attendees.length === 2) {
+    // Define the ARN for the meeting source and the S3 bucket destination
+    let captureS3Destination = `arn:aws:s3:::${CAPTURE_S3_DESTINATION_PREFIX}-${meetingRegion}/${meeting.Meeting.MeetingId}/`
+    const meetingArn = `arn:aws:chime::302840009536:meeting:${meetingId}`;
+    if (captureS3Destination) {
+      const s3BucketArn = captureS3Destination;
+      try {
+        const recordingResponse = await createMediaCapturePipeline(meetingArn, s3BucketArn);
+        console.log("Recording started successfully", recordingResponse);
+        // Optionally, store recording info in your meetingTable for reference
+        // meetingTable[requestUrl.query.title].recordingInfo = recordingResponse;
+      } catch (error) {
+        console.error("Failed to start recording:", error);
+        // Handle the failure as needed
+      }
+    } else {
+      console.warn("Cloud media capture not available")
+      respond(response, 500, 'application/json', JSON.stringify({}))
+    }
+  }
+
+  // const request = {
+  //   SourceType: "ChimeSdkMeeting",
+  //   SourceArn: `arn:aws:chime::${AWS_ACCOUNT_ID}:meeting:${meeting.Meeting.MeetingId}`,
+  //   SinkType: "S3Bucket",
+  //   SinkArn: captureS3Destination,
+  // };
+  // console.log("Creating new media capture pipeline: ", request)
+  // pipelineInfo = await chimeSdkMediaPipelines.createMediaCapturePipeline(request);
+
+  // await putCapturePipeline(event.queryStringParameters.title, pipelineInfo)
+  // console.log("Successfully created media capture pipeline: ", pipelineInfo);
 
   return response(201, 'application/json', JSON.stringify(pipelineInfo));
 };
@@ -450,7 +481,6 @@ exports.end_capture = async (event, context) => {
     return response(500, 'application/json', JSON.stringify({ msg: "No pipeline to stop for this meeting" }))
   }
 };
-
 
 exports.start_live_connector = async (event, context) => {
   // Fetch the meeting by title
@@ -676,6 +706,28 @@ async function putCapturePipeline(title, capture) {
   })
 }
 
+// Function to create a media capture pipeline
+async function createMediaCapturePipeline(meetingId) {
+  const sourceArn = `arn:aws:chime::${process.env.AWS_ACCOUNT_ID}:meeting:${meetingId}`;
+  const sinkArn = recordingBucketArn;
+
+  const command = new CreateMediaCapturePipelineCommand({
+      SourceType: "ChimeSdkMeeting",
+      SourceArn: sourceArn,
+      SinkType: "S3Bucket",
+      SinkArn: sinkArn,
+  });
+
+  try {
+      const response = await mediaPipelinesClient.send(command);
+      console.log("Media Capture Pipeline created successfully:", response);
+      return response;
+  } catch (error) {
+      console.error("Error creating media capture pipeline:", error);
+      throw error;
+  }
+}
+
 // Retrieves live connector data for a meeting by title
 async function getLiveConnectorPipeline(title) {
   const result = await ddb.getItem({
@@ -820,10 +872,10 @@ function delay(milliseconds){
 function response(statusCode, contentType, body, isBase64Encoded = false) {
   return {
     statusCode: statusCode,
-    headers: { 
+    headers: {
       'Content-Type': contentType,
       // enable shared array buffer for videoFxProcessor
-      'Cross-Origin-Opener-Policy': 'same-origin', 
+      'Cross-Origin-Opener-Policy': 'same-origin',
       // enable shared array buffer for videoFxProcessor
       'Cross-Origin-Embedder-Policy': 'require-corp',
     },
